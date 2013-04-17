@@ -28,6 +28,7 @@ Gem::Specification.new do |spec|
                           lib/hbasegate/hbase_configuration.rb
                           lib/hbasegate/htable.rb
                           lib/hbasegate/result.rb
+                          lib/hbasegate/result_scanner.rb
                           lib/hbasegate/version.rb
 )
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
