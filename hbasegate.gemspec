@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["knut.hellan@gmail.com"]
   spec.description   = %q{JRuby gem wrapping Java API for HBase}
   spec.summary       = %q{More ruby friendly API than using Java directly}
-  spec.homepage      = ""
+  spec.homepage      = "http://github.com/khellan/hbasegate"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/)
