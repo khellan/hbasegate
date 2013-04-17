@@ -15,7 +15,7 @@ module HBaseGate
     def get(key, entries = nil)
       get = Get.new(key.to_java_bytes)
       augment_action(entries, get.method(:add_family), get.method(:add_column))
-      original_get(get).to_h
+      original_get(get)
     end
 
     # Store row key with an array of family, column, value arrays.
