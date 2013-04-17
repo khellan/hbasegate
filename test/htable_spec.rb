@@ -3,6 +3,8 @@ require 'minitest/spec'
 
 require_relative '../lib/hbasegate'
 
+java_import 'org.apache.hadoop.hbase.HConstants'
+
 class HBaseGate::Get
   def to_h
     self
@@ -97,6 +99,30 @@ describe HBaseGate::HTable do
       expected.delete_family('b'.to_java_bytes)
       my_table.delete('a', [['b']])
       my_table.action.must_equal expected
+    end
+  end
+
+  describe '#get_scanner' do
+    my_table = table.dup
+    def my_table.original_get_scanner(scan)
+      scan
+    end
+    it 'yields a scanner for the whole table' do
+      actual = my_table.get_scanner
+      actual.get_start_row.must_equal HConstants::EMPTY_START_ROW
+      actual.get_stop_row.must_equal HConstants::EMPTY_END_ROW
+    end
+
+    it 'yields a scanner with a start row' do
+      actual = my_table.get_scanner('a')
+      String.from_java_bytes(actual.get_start_row).must_equal 'a'
+      actual.get_stop_row.must_equal HConstants::EMPTY_END_ROW
+    end
+
+    it 'yields a scanner with a start row' do
+      actual = my_table.get_scanner('a', 'z')
+      String.from_java_bytes(actual.get_start_row).must_equal 'a'
+      String.from_java_bytes(actual.get_stop_row).must_equal 'z'
     end
   end
 end

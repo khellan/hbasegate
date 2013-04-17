@@ -3,11 +3,13 @@ module HBaseGate
   java_import 'org.apache.hadoop.hbase.client.Get'
   java_import 'org.apache.hadoop.hbase.client.HTable'
   java_import 'org.apache.hadoop.hbase.client.Put'
+  java_import 'org.apache.hadoop.hbase.client.Scan'
 
   class HTable
     alias_method :original_delete, :delete
     alias_method :original_get, :get
     alias_method :original_put, :put
+    alias_method :original_get_scanner, :get_scanner
 
     # Read row key with an array of family, column arrays.
     def get(key, entries = nil)
@@ -30,6 +32,19 @@ module HBaseGate
       delete = Delete.new(key.to_java_bytes)
       augment_action(entries, delete.method(:delete_family), delete.method(:delete_column))
       original_delete(delete)
+    end
+
+    # Create a scanner for the table.
+    def get_scanner(start_row = nil, stop_row = nil)
+      scan = case
+        when stop_row
+          Scan.new(start_row.to_java_bytes, stop_row.to_java_bytes)
+        when start_row
+          Scan.new(start_row.to_java_bytes)
+        else
+          Scan.new
+      end
+      original_get_scanner(scan)
     end
 
     private

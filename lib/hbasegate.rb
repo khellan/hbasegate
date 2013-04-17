@@ -15,6 +15,7 @@ require 'zookeeper-3.4.5'
 require 'hbasegate/hbase_configuration'
 require 'hbasegate/htable'
 require 'hbasegate/result'
+require 'hbasegate/result_scanner'
 require 'hbasegate/version'
 
 $:.pop
