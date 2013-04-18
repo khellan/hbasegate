@@ -11,26 +11,27 @@ module HBaseGate
     alias_method :original_put, :put
     alias_method :original_get_scanner, :get_scanner
 
-    # Read row key with an array of family, column arrays.
+    # Read row key with an optional array of columns.
     def get(key, entries = nil)
       get = Get.new(key.to_java_bytes)
-      augment_action(entries, get.method(:add_family), get.method(:add_column))
+      specify_columns(entries, get.method(:add_family), get.method(:add_column))
       original_get(get)
     end
 
-    # Store row key with an array of family, column, value arrays.
-    def put(key, entries = nil)
+    # Store row key with an hash of columns to values.
+    def put(key, column_values = nil)
       put = Put.new(key.to_java_bytes)
-      (entries || []).each.each do |family, qualifier, value|
+      (column_values || {}).each do |column, value|
+        family, qualifier = column.split(/:/)
         put.add(family.to_java_bytes, qualifier.to_java_bytes, value.to_java_bytes)
       end
       original_put(put)
     end
 
-    # Delete row key with an array of family, column arrays.
-    def delete(key, entries = nil)
+    # Delete row key with an optional array of columns.
+    def delete(key, columns = nil)
       delete = Delete.new(key.to_java_bytes)
-      augment_action(entries, delete.method(:delete_family), delete.method(:delete_column))
+      specify_columns(columns, delete.method(:delete_family), delete.method(:delete_column))
       original_delete(delete)
     end
 
@@ -48,9 +49,10 @@ module HBaseGate
     end
 
     private
-    # Iterate over the entries and use the given functions on them.
-    def augment_action(entries, family_do, qualifier_do)
-      (entries || []).each do |family, qualifier|
+    # Iterate over the columns and use the given functions on them.
+    def specify_columns(columns, family_do, qualifier_do)
+      (columns || []).each do |column|
+        family, qualifier = column.split(/:/)
         case
           when qualifier
             qualifier_do.call(family.to_java_bytes, qualifier.to_java_bytes)

@@ -12,6 +12,12 @@ class HBaseGate::Get
 end
 
 describe HBaseGate::HTable do
+  ROW_KEY = 'a'
+  FAMILY = 'b'
+  COLUMN = 'c'
+  VALUE = 'd'
+  FULL_COLUMN_NAME = "#{FAMILY}:#{COLUMN}"
+
   table = HBaseGate::HTable.new(nil, 't')
   table.set_write_buffer_size(2097152)
 
@@ -29,9 +35,9 @@ describe HBaseGate::HTable do
 
   describe '#put' do
     it 'writes to the table' do
-      table.put('a', [['b', 'c', 'd']])
-      expected = HBaseGate::Put.new('a'.to_java_bytes)
-      expected.add('b'.to_java_bytes, 'c'.to_java_bytes, 'd'.to_java_bytes)
+      table.put('a', { FULL_COLUMN_NAME => VALUE })
+      expected = HBaseGate::Put.new(ROW_KEY.to_java_bytes)
+      expected.add(FAMILY.to_java_bytes, COLUMN.to_java_bytes, VALUE.to_java_bytes)
       result = table.get_write_buffer
       result.get(0).must_equal expected
       result.size.must_equal 1
@@ -50,20 +56,20 @@ describe HBaseGate::HTable do
       get
     end
     it 'reads a full row' do
-      expected = HBaseGate::Get.new('a'.to_java_bytes)
-      my_table.get('a').must_equal expected
+      expected = HBaseGate::Get.new(ROW_KEY.to_java_bytes)
+      my_table.get(ROW_KEY).must_equal expected
     end
 
     it 'reads a specific column' do
-      expected = HBaseGate::Get.new('a'.to_java_bytes)
-      expected.add_column('b'.to_java_bytes, 'c'.to_java_bytes)
-      my_table.get('a', [['b', 'c']]).must_equal expected
+      expected = HBaseGate::Get.new(ROW_KEY.to_java_bytes)
+      expected.add_column(FAMILY.to_java_bytes, COLUMN.to_java_bytes)
+      my_table.get(ROW_KEY, [FULL_COLUMN_NAME]).must_equal expected
     end
 
     it 'reads a complete column family' do
-      expected = HBaseGate::Get.new('a'.to_java_bytes)
-      expected.add_family('b'.to_java_bytes)
-      my_table.get('a', [['b']]).must_equal expected
+      expected = HBaseGate::Get.new(ROW_KEY.to_java_bytes)
+      expected.add_family(FAMILY.to_java_bytes)
+      my_table.get(ROW_KEY, [FAMILY]).must_equal expected
     end
   end
 
@@ -82,22 +88,22 @@ describe HBaseGate::HTable do
       @action
     end
     it 'deletes a full row' do
-      expected = HBaseGate::Delete.new('a'.to_java_bytes)
-      my_table.delete('a')
+      expected = HBaseGate::Delete.new(ROW_KEY.to_java_bytes)
+      my_table.delete(ROW_KEY)
       my_table.action.must_equal expected
     end
 
     it 'deletes a specific column' do
-      expected = HBaseGate::Delete.new('a'.to_java_bytes)
-      expected.delete_column('b'.to_java_bytes, 'c'.to_java_bytes)
-      my_table.delete('a', [['b', 'c']])
+      expected = HBaseGate::Delete.new(ROW_KEY.to_java_bytes)
+      expected.delete_column(FAMILY.to_java_bytes, COLUMN.to_java_bytes)
+      my_table.delete(ROW_KEY, [FULL_COLUMN_NAME])
       my_table.action.must_equal expected
     end
 
     it 'deletes a complete column family' do
-      expected = HBaseGate::Delete.new('a'.to_java_bytes)
-      expected.delete_family('b'.to_java_bytes)
-      my_table.delete('a', [['b']])
+      expected = HBaseGate::Delete.new(ROW_KEY.to_java_bytes)
+      expected.delete_family(FAMILY.to_java_bytes)
+      my_table.delete(ROW_KEY, [FAMILY])
       my_table.action.must_equal expected
     end
   end

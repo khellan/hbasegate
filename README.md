@@ -3,6 +3,8 @@ hbasegate
 
 JRuby gem wrapping Java API for HBase
 
+(Use hbase-stargate for other ruby implementations)
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -38,20 +40,20 @@ Get a handle to the table:
 And use it:
 
     $ r = table.get('me')
-    $ puts r
+    $ puts r.to_h
 
-You specify column families, columns and values in an array of arrays. Each element of the inner array specifies on
-item.
+You specify column families and qualifiers as colon separated strings. When writing, you supply a hash of
+columns to values and when reading, you specify an array of columns.
 
-    $ r = table.get('me', [['family']])
-    $ r = table.get('me', [['family', 'column']])
-    $ r = table.get('me', [['family1', 'column1'], ['family2', 'column2']])
-    $ r = table.put('me', [['family1', 'column1', 'value1'], ['family2', 'column2', 'value2']])
+    $ r = table.get('me', ['family'])
+    $ r = table.get('me', ['family:qualifier'])
+    $ r = table.get('me', ['family1:qualifier1', 'family2:qualifier2'])
+    $ table.put('me', { 'family1:column1' => 'value1', 'family2:column2' => 'value2' })
     $ r = table.delete('me')
-    $ r = table.delete('me', [['family']])
-    $ r = table.delete('me', [['family', 'column']])
+    $ r = table.delete('me', ['family'])
+    $ r = table.delete('me', ['family:qualifier'])
 
-
+The to_h method of the result is useful for getting a hash of the result.
 
 ## Contributing
 
