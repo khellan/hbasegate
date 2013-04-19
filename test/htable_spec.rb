@@ -2,6 +2,7 @@ require 'minitest/autorun'
 require 'minitest/spec'
 
 require_relative '../lib/hbasegate'
+require_relative 'fake_scanner'
 
 java_import 'org.apache.hadoop.hbase.HConstants'
 
@@ -129,6 +130,16 @@ describe HBaseGate::HTable do
       actual = my_table.get_scanner('a', 'z')
       String.from_java_bytes(actual.get_start_row).must_equal 'a'
       String.from_java_bytes(actual.get_stop_row).must_equal 'z'
+    end
+  end
+
+  describe '#each' do
+    my_table = table.dup
+    def my_table.original_get_scanner(_)
+      FakeScanner.new(%w(a b c))
+    end
+    it 'iterates over all elements in the table through the scanner' do
+      my_table.entries.must_equal %w(a b c)
     end
   end
 end

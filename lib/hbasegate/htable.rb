@@ -6,6 +6,8 @@ module HBaseGate
   java_import 'org.apache.hadoop.hbase.client.Scan'
 
   class HTable
+    include Enumerable
+
     alias_method :original_delete, :delete
     alias_method :original_get, :get
     alias_method :original_put, :put
@@ -33,6 +35,11 @@ module HBaseGate
       delete = Delete.new(key.to_java_bytes)
       specify_columns(columns, delete.method(:delete_family), delete.method(:delete_column))
       original_delete(delete)
+    end
+
+    # Enable the Enumerable module by providing a full scanner.
+    def each
+      original_get_scanner(Scan.new).each { |row| yield row }
     end
 
     # Create a scanner for the table.
