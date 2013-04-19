@@ -4,12 +4,14 @@ module HBaseGate
   class Result
     # Return a nested hash of the result.
     def to_h
-      get_no_version_map.entry_set.reduce({}) do |families, family_entries|
-        columns = family_entries.get_value.entry_set.reduce({}) do |columns, column_entry|
+      get_no_version_map.entry_set.reduce({}) do |columns, family_entries|
+        family = String.from_java_bytes(family_entries.get_key)
+        family_entries.get_value.entry_set.each do |column_entry|
           columns.update(
-              String.from_java_bytes(column_entry.get_key) => String.from_java_bytes(column_entry.get_value))
+              "#{family}:#{String.from_java_bytes(column_entry.get_key)}" =>
+                  String.from_java_bytes(column_entry.get_value))
         end
-        families.update(String.from_java_bytes(family_entries.get_key) =>  columns)
+        columns
       end
     end
   end
