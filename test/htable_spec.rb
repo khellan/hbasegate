@@ -36,10 +36,23 @@ describe HBaseGate::HTable do
 
   describe '#put' do
     it 'writes to the table' do
-      table.put('a', { FULL_COLUMN_NAME => VALUE })
+      my_table = HBaseGate::HTable.new(nil, 't')
+      my_table.set_write_buffer_size(2097152)
+      my_table.put('a', { FULL_COLUMN_NAME => VALUE })
       expected = HBaseGate::Put.new(ROW_KEY.to_java_bytes)
       expected.add(FAMILY.to_java_bytes, COLUMN.to_java_bytes, VALUE.to_java_bytes)
-      result = table.get_write_buffer
+      result = my_table.get_write_buffer
+      result.get(0).must_equal expected
+      result.size.must_equal 1
+    end
+
+    it 'handles numeric values' do
+      my_table = HBaseGate::HTable.new(nil, 't')
+      my_table.set_write_buffer_size(2097152)
+      my_table.put('a', { FULL_COLUMN_NAME => 1 })
+      expected = HBaseGate::Put.new(ROW_KEY.to_java_bytes)
+      expected.add(FAMILY.to_java_bytes, COLUMN.to_java_bytes, 1.to_s.to_java_bytes)
+      result = my_table.get_write_buffer
       result.get(0).must_equal expected
       result.size.must_equal 1
     end

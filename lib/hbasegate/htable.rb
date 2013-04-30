@@ -25,7 +25,7 @@ module HBaseGate
       put = Put.new(key.to_java_bytes)
       (column_values || {}).each do |column, value|
         family, qualifier = column.split(/:/)
-        put.add(family.to_java_bytes, qualifier.to_java_bytes, value.to_java_bytes)
+        put.add(family.to_java_bytes, qualifier.to_java_bytes, value.to_s.to_java_bytes)
       end
       original_put(put)
     end
